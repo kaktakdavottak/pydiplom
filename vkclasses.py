@@ -39,6 +39,8 @@ class VkUser:
         The function uses the method groups.get from API vk.com
         https://vk.com/dev/groups.get
         '''
+
+        errors = [18, 7]  # possible errors from api vk
         repeat = True
         groups_set = set()
         while repeat:
@@ -53,6 +55,10 @@ class VkUser:
             groups_data = response.json()
 
             if 'error' in groups_data and 'error_code' in groups_data['error']\
+                    and groups_data['error']['error_code'] in errors:
+                groups_set = set()
+                repeat = False
+            elif 'error' in groups_data and 'error_code' in groups_data['error']\
                     and groups_data['error']['error_code'] == 6:
                 time.sleep(1)
             else:

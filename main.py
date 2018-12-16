@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 
 import vkclasses
-import time
 import json
 import authsettings
 
@@ -17,14 +16,9 @@ def get_difference_set():
 
     common_set = set()
     for e, friend in enumerate(main_friedset):
-        try:
-            current_user = vkclasses.VkUser(str(friend))
-            common_set = common_set.union(current_user.groups())
-            print('Осталось {} обращений к API'.format(len(main_friedset) - e))
-            # time.sleep(0.3)
-        except KeyError:
-            print('Осталось {} обращений к API'.format(len(main_friedset) - e))
-            # time.sleep(0.3)
+        current_user = vkclasses.VkUser(str(friend))
+        common_set = common_set.union(current_user.groups())
+        print('Осталось {} обращений к API'.format(len(main_friedset) - e))
 
     difference_set = main_groupset.difference(common_set)
 
