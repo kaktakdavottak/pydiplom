@@ -1,5 +1,6 @@
 import requests
 import authsettings
+import time
 
 
 USER_ID = authsettings.get_setting('settings.ini', 'Settings', 'user_id')
@@ -38,19 +39,26 @@ class VkUser:
         The function uses the method groups.get from API vk.com
         https://vk.com/dev/groups.get
         '''
-        params = {
-            'user_id': self.user_id,
-            'extended': '1',
-            'access_token': TOKEN,
-            'v': '5.92',
-            'fields': 'members_count'
-        }
-        response = requests.get('https://api.vk.com/method/groups.get', params)
-        groups_data = response.json()
-
+        repeat = True
         groups_set = set()
-        for group in groups_data['response']['items']:
-            groups_set.add(group['id'])
+        while repeat:
+            params = {
+                'user_id': self.user_id,
+                'extended': '1',
+                'access_token': TOKEN,
+                'v': '5.92',
+                'fields': 'members_count'
+            }
+            response = requests.get('https://api.vk.com/method/groups.get', params)
+            groups_data = response.json()
+
+            if 'error' in groups_data and 'error_code' in groups_data['error']\
+                    and groups_data['error']['error_code'] == 6:
+                time.sleep(1)
+            else:
+                repeat = False
+                for group in groups_data['response']['items']:
+                    groups_set.add(group['id'])
 
         return groups_set
 

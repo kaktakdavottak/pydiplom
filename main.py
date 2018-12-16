@@ -21,10 +21,10 @@ def get_difference_set():
             current_user = vkclasses.VkUser(str(friend))
             common_set = common_set.union(current_user.groups())
             print('Осталось {} обращений к API'.format(len(main_friedset) - e))
-            time.sleep(0.3)
+            # time.sleep(0.3)
         except KeyError:
             print('Осталось {} обращений к API'.format(len(main_friedset) - e))
-            time.sleep(0.3)
+            # time.sleep(0.3)
 
     difference_set = main_groupset.difference(common_set)
 
