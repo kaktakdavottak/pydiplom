@@ -90,3 +90,20 @@ class VkGroup:
         group_data = response.json()
 
         return group_data
+
+    def members(self):
+        '''
+        Returns a set of community members.
+        The function uses the method groups.getMembers from API vk.com
+        https://vk.com/dev/groups.getMembers
+        '''
+        params = {
+            'group_id': self.group_id,
+            'access_token': TOKEN,
+            'v': '5.92'
+        }
+        response = requests.get('https://api.vk.com/method/groups.getMembers', params)
+        group_members = response.json()
+        members_set = set(group_members['response']['items'])
+
+        return members_set
