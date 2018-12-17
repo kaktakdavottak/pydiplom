@@ -10,7 +10,17 @@ TOKEN = authsettings.get_setting('settings.ini', 'Settings', 'token')
 class VkUser:
 
     def __init__(self, user_id):
-        self.user_id = user_id
+        if str(user_id).isdigit():
+            self.user_id = user_id
+        else:
+            params = {
+                'user_ids': user_id,
+                'access_token': TOKEN,
+                'v': '5.92'
+            }
+            response = requests.get('https://api.vk.com/method/users.get', params)
+            user_data = response.json()
+            self.user_id = user_data['response'][0]['id']
 
     def friends(self):
         '''
