@@ -5,6 +5,7 @@ import time
 
 USER_ID = authsettings.get_setting('settings.ini', 'Settings', 'user_id')
 TOKEN = authsettings.get_setting('settings.ini', 'Settings', 'token')
+API_VER = '5.92'
 
 
 class VkUser:
@@ -16,7 +17,7 @@ class VkUser:
             params = {
                 'user_ids': user_id,
                 'access_token': TOKEN,
-                'v': '5.92'
+                'v': API_VER
             }
             response = requests.get('https://api.vk.com/method/users.get', params)
             user_data = response.json()
@@ -31,7 +32,7 @@ class VkUser:
         params = {
             'user_id': self.user_id,
             'access_token': TOKEN,
-            'v': '5.92',
+            'v': API_VER,
             'fields': 'domain'
         }
         response = requests.get('https://api.vk.com/method/friends.get', params)
@@ -53,28 +54,31 @@ class VkUser:
         errors = [18, 7]  # possible errors from api vk
         repeat = True
         groups_set = set()
-        while repeat:
-            params = {
-                'user_id': self.user_id,
-                'extended': '1',
-                'access_token': TOKEN,
-                'v': '5.92',
-                'fields': 'members_count'
-            }
-            response = requests.get('https://api.vk.com/method/groups.get', params)
-            groups_data = response.json()
+        try:
+            while repeat:
+                params = {
+                    'user_id': self.user_id,
+                    'extended': '1',
+                    'access_token': TOKEN,
+                    'v': API_VER,
+                    'fields': 'members_count'
+                }
+                response = requests.get('https://api.vk.com/method/groups.get', params)
+                groups_data = response.json()
 
-            if 'error' in groups_data and 'error_code' in groups_data['error']\
-                    and groups_data['error']['error_code'] in errors:
-                groups_set = set()
-                repeat = False
-            elif 'error' in groups_data and 'error_code' in groups_data['error']\
-                    and groups_data['error']['error_code'] == 6:
-                time.sleep(1)
-            else:
-                repeat = False
-                for group in groups_data['response']['items']:
-                    groups_set.add(group['id'])
+                if 'error' in groups_data and 'error_code' in groups_data['error']\
+                        and groups_data['error']['error_code'] in errors:
+                    groups_set = set()
+                    repeat = False
+                elif 'error' in groups_data and 'error_code' in groups_data['error']\
+                        and groups_data['error']['error_code'] == 6:
+                    time.sleep(1)
+                else:
+                    repeat = False
+                    for group in groups_data['response']['items']:
+                        groups_set.add(group['id'])
+        except KeyError:
+            print('Error')
 
         return groups_set
 
@@ -93,7 +97,7 @@ class VkGroup:
         params = {
             'group_id': self.group_id,
             'access_token': TOKEN,
-            'v': '5.92',
+            'v': API_VER,
             'fields': 'members_count'
         }
         response = requests.get('https://api.vk.com/method/groups.getById', params)
@@ -110,7 +114,7 @@ class VkGroup:
         params = {
             'group_id': self.group_id,
             'access_token': TOKEN,
-            'v': '5.92'
+            'v': API_VER
         }
         response = requests.get('https://api.vk.com/method/groups.getMembers', params)
         group_members = response.json()

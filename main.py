@@ -48,7 +48,7 @@ def get_common_set():
         for e, group in enumerate(common_set_with_main):
             current_group = vkclasses.VkGroup(str(group))
             current_group_members = current_group.members()
-            if len(main_friedset.union(current_group_members)) < n:
+            if len(main_friedset.intersection(current_group_members)) < n:
                 common_groups_set.add(group)
             print('Осталось {} обращений к API'.format(len(common_set_with_main) - e))
     except KeyError:
@@ -81,5 +81,5 @@ def result_data_to_json(group_id_list, file_name):
 
 
 if __name__ == "__main__":
-    # result_data_to_json(get_difference_set(), 'groups.json')
-    result_data_to_json(get_common_set(), 'groups2.json')
+    result_data_to_json(get_difference_set(), 'groups.json')
+    #result_data_to_json(get_common_set(), 'groups2.json')
