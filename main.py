@@ -82,7 +82,7 @@ def result_data_to_json(group_id_list, file_name):
         group_list.append(iter_dict)
         time.sleep(0.3)
 
-    with open(file_name, 'w') as f:
+    with open(file_name, 'w', encoding='utf8') as f:
         json.dump(group_list, f, ensure_ascii=False, indent=2)
 
 
