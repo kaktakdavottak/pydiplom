@@ -3,6 +3,7 @@
 import vkclasses
 import json
 import authsettings
+import time
 
 
 def get_difference_set():
@@ -68,13 +69,18 @@ def result_data_to_json(group_id_list, file_name):
         current_group = vkclasses.VkGroup(str(group))
         group_data = current_group.information()
         iter_dict = dict()
-
-        for item in group_data['response']:
-            iter_dict['name'] = item['name']
-            iter_dict['gid'] = item['id']
-            iter_dict['members_count'] = item['members_count']
+        try:
+            for item in group_data['response']:
+                iter_dict['name'] = item['name']
+                iter_dict['gid'] = item['id']
+                iter_dict['members_count'] = item['members_count']
+        except KeyError:
+            iter_dict['name'] = 'Error'
+            iter_dict['gid'] = group
+            iter_dict['members_count'] = 'Error'
 
         group_list.append(iter_dict)
+        time.sleep(0.3)
 
     with open(file_name, 'w') as f:
         json.dump(group_list, f, ensure_ascii=False, indent=2)
