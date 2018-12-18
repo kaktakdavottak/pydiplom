@@ -66,9 +66,11 @@ def result_data_to_json(group_id_list, file_name):
     The function takes group data by their id
     and returns the result to a json file.
     '''
+    print('\nЗапись информации о группах в файл:')
     group_list = []
-
-    for group in group_id_list:
+    pbar = tqdm(group_id_list, ncols=120)
+    for group in pbar:
+        pbar.set_description("Обрабатывается группа id %s" % group)
         current_group = vkclasses.VkGroup(str(group))
         group_data = current_group.information()
         iter_dict = dict()
