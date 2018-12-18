@@ -52,33 +52,41 @@ class VkUser:
         '''
 
         errors = [18, 7]  # possible errors from api vk
-        repeat = True
+        retry_count = 0
+        retry_max = 50
         groups_set = set()
-        try:
-            while repeat:
-                params = {
-                    'user_id': self.user_id,
-                    'extended': '1',
-                    'access_token': TOKEN,
-                    'v': API_VER,
-                    'fields': 'members_count'
-                }
-                response = requests.get('https://api.vk.com/method/groups.get', params)
-                groups_data = response.json()
+        while retry_count < retry_max:
+            try:
+                repeat = True
+                try:
+                    while repeat:
+                        params = {
+                            'user_id': self.user_id,
+                            'extended': '1',
+                            'access_token': TOKEN,
+                            'v': API_VER,
+                            'fields': 'members_count'
+                        }
+                        response = requests.get('https://api.vk.com/method/groups.get', params)
+                        groups_data = response.json()
 
-                if 'error' in groups_data and 'error_code' in groups_data['error']\
-                        and groups_data['error']['error_code'] in errors:
-                    groups_set = set()
-                    repeat = False
-                elif 'error' in groups_data and 'error_code' in groups_data['error']\
-                        and groups_data['error']['error_code'] == 6:
-                    time.sleep(1)
-                else:
-                    repeat = False
-                    for group in groups_data['response']['items']:
-                        groups_set.add(group['id'])
-        except KeyError:
-            print('Error')
+                        if 'error' in groups_data and 'error_code' in groups_data['error']\
+                                and groups_data['error']['error_code'] in errors:
+                            groups_set = set()
+                            repeat = False
+                        elif 'error' in groups_data and 'error_code' in groups_data['error']\
+                                and groups_data['error']['error_code'] == 6:
+                            time.sleep(1)
+                        else:
+                            repeat = False
+                            for group in groups_data['response']['items']:
+                                groups_set.add(group['id'])
+                except KeyError:
+                    pass
+            except requests.exceptions.ReadTimeout:
+                retry_count += 1
+                continue
+            break
 
         return groups_set
 

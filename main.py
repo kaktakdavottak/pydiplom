@@ -4,6 +4,7 @@ import vkclasses
 import json
 import authsettings
 import time
+from tqdm import tqdm
 
 
 def get_difference_set():
@@ -11,15 +12,17 @@ def get_difference_set():
     Returns a set of groups in vk.com in which the user is composed,
     but none of his friends are members.
     '''
+    print('Поиск групп:')
     main_user = vkclasses.VkUser(authsettings.get_setting('settings.ini', 'Settings', 'user_id'))
     main_groupset = main_user.groups()
     main_friedset = main_user.friends()
 
     common_set = set()
-    for e, friend in enumerate(main_friedset):
+    pbar = tqdm(main_friedset, ncols=120)
+    for friend in pbar:
         current_user = vkclasses.VkUser(str(friend))
         common_set = common_set.union(current_user.groups())
-        print('Осталось {} обращений к API'.format(len(main_friedset) - e))
+        pbar.set_description("Обрабатывается пользователь id %s" % friend)
 
     difference_set = main_groupset.difference(common_set)
 
