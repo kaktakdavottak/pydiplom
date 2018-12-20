@@ -35,28 +35,21 @@ def get_common_set():
     in which there are common friends, but no more than N people,
     where N is specified in the code..
     '''
-    n = 197
+    n = 3
     main_user = vkclasses.VkUser(authsettings.get_setting('settings.ini', 'Settings', 'user_id'))
     main_groupset = main_user.groups()
     main_friedset = main_user.friends()
-
-    common_set = set()
-    for e, friend in enumerate(main_friedset):
-        current_user = vkclasses.VkUser(str(friend))
-        common_set = common_set.union(current_user.groups())
-        print('Осталось {} обращений к API'.format(len(main_friedset) - e))
-
-    common_set_with_main = main_groupset.intersection(common_set)
     common_groups_set = set()
-    try:
-        for e, group in enumerate(common_set_with_main):
-            current_group = vkclasses.VkGroup(str(group))
-            current_group_members = current_group.members()
-            if len(main_friedset.intersection(current_group_members)) < n:
-                common_groups_set.add(group)
-            print('Осталось {} обращений к API'.format(len(common_set_with_main) - e))
-    except KeyError:
-        print('Осталось {} обращений к API'.format(len(common_set_with_main) - e))
+
+    print('Получение списка общих групп, где друзей не более {} человек:'.format(n))
+    pbar = tqdm(main_groupset, ncols=120)
+    for group in pbar:
+        pbar.set_description("Обрабатывается группа id %s" % group)
+        current_group = vkclasses.VkGroup(str(group))
+        current_group_members = current_group.members()
+
+        if len(main_friedset.intersection(current_group_members)) < n:
+            common_groups_set.add(group)
 
     return common_groups_set
 
@@ -66,7 +59,7 @@ def result_data_to_json(group_id_list, file_name):
     The function takes group data by their id
     and returns the result to a json file.
     '''
-    print('\nЗапись информации о группах в файл:')
+    print('\n\nЗапись информации о группах в файл:')
     group_list = []
     pbar = tqdm(group_id_list, ncols=120)
     for group in pbar:
@@ -93,4 +86,4 @@ def result_data_to_json(group_id_list, file_name):
 
 if __name__ == "__main__":
     result_data_to_json(get_difference_set(), 'groups.json')
-    #result_data_to_json(get_common_set(), 'groups2.json')
+    result_data_to_json(get_common_set(), 'groups2.json')

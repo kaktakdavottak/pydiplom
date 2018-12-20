@@ -83,7 +83,7 @@ class VkUser:
                                 groups_set.add(group['id'])
                 except KeyError:
                     pass
-            except requests.exceptions.ReadTimeout:
+            except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
                 retry_count += 1
                 continue
             break
@@ -116,16 +116,54 @@ class VkGroup:
     def members(self):
         '''
         Returns a set of community members.
-        The function uses the method groups.getMembers from API vk.com
-        https://vk.com/dev/groups.getMembers
+        The function uses the method groups.getMembers and execute from API vk.com
+        https://vk.com/dev/groups.getMembers, https://vk.com/dev/execute
         '''
-        params = {
-            'group_id': self.group_id,
-            'access_token': TOKEN,
-            'v': API_VER
-        }
-        response = requests.get('https://api.vk.com/method/groups.getMembers', params)
-        group_members = response.json()
-        members_set = set(group_members['response']['items'])
+        members_set = set()
+        count_members = 26000
+        ofsets = [of for of in range(0, 25000, 1000)]
+
+        while len(members_set) < count_members:
+            params = {
+                'code': 'return [API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}),'
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}}), '
+                        'API.groups.getMembers({{"group_id": {group_id}, "offset": {}, "count": 1000}})'
+                        '];'.format(group_id=self.group_id, *ofsets),
+                'access_token': TOKEN,
+                'v': API_VER
+            }
+            response = requests.get('https://api.vk.com/method/execute', params)
+            group_members = response.json()
+            count_members = group_members['response'][0]['count']
+
+            for i in range(0, 25):
+                for item in group_members['response'][i]['items']:
+                    members_set.add(item)
+
+            ofsets_iter = [of + 25000 for of in ofsets]
+            ofsets = ofsets_iter
+            time.sleep(0.3)
 
         return members_set
