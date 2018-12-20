@@ -47,7 +47,6 @@ def get_common_set():
         pbar.set_description("Обрабатывается группа id %s" % group)
         current_group = vkclasses.VkGroup(str(group))
         current_group_members = current_group.members()
-        # current_group_members.remove(int(main_user.user_id))
 
         if 0 < len(main_friedset.intersection(current_group_members)) < n:
             common_groups_set.add(group)
@@ -86,5 +85,5 @@ def result_data_to_json(group_id_list, file_name):
 
 
 if __name__ == "__main__":
-    # result_data_to_json(get_difference_set(), 'groups.json')
+    result_data_to_json(get_difference_set(), 'groups.json')
     result_data_to_json(get_common_set(), 'groups2.json')
